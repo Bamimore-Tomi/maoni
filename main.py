@@ -1,6 +1,5 @@
-import os
+import os, sys
 import re
-import pymongo
 from dotenv import load_dotenv
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -9,14 +8,17 @@ import utils
 load_dotenv()
 
 app = App(token=os.getenv("SLACK_BOT_TOKEN"))
-db = pymongo.MongoClient(os.getenv("DB_URL"))[os.getenv("DB_NAME")]
 
 
 @app.message(r"^BUG")
 def record_bug(message, say):
     user_id = message["user"]
     bug = utils.parse_bug(message["text"])
-    tracking_id = utils.save_bug(db, bug)
+    bug_exists = utils.is_similar_bug_semantic(bug)
+    if bug_exists != "":
+        say(f"Hi <@{user_id}>.\nThe bug already exists with tracking {bug_exists}.")
+        return
+    tracking_id = utils.save_bug(bug)
     say(
         f"Hi <@{user_id}>.\nYour bug has been recorded. Tracking is {tracking_id}",
         thread_ts=message["ts"],
