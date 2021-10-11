@@ -28,3 +28,7 @@ def save_bug(db, bug: dict) -> str:
     bug["tracking_id"] = tracking_id
     db.bugs.insert_one(bug)
     return tracking_id
+
+
+def is_similar_context() -> int:
+    pass
